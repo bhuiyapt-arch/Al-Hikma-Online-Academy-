@@ -164,6 +164,35 @@ dialog .c{display:block;margin:12px auto 0}
 .pl:focus-visible{outline:2px solid var(--or);outline-offset:2px}
 [data-theme=dark] .pl{box-shadow:0 0 12px rgba(53,242,160,.4),inset 0 0 8px rgba(53,242,160,.15);text-shadow:0 0 8px rgba(53,242,160,.7)}
 .c#pa{border-color:var(--tl);color:var(--tl)}
+
+/* Play label, verse rise animation and live word fill */
+.pl{width:auto;min-width:84px;padding:0 14px;height:40px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.cd>.ar .w{transition:color .25s,text-shadow .25s}
+.cd>.ar .w.on{color:var(--tl);text-shadow:0 0 14px rgba(53,242,160,.55)}
+.cd.playing{border-color:var(--tl)!important;box-shadow:0 0 0 1px var(--tl),0 0 30px rgba(53,242,160,.35)!important}
+#rd.rise{animation:rise .75s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(80px) scale(.96);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.cd.in{animation:vup .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+@keyframes vup{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+.sc.pop{animation:pop .5s ease}
+@keyframes pop{50%{transform:translateY(-6px) scale(1.07)}}
+@media (prefers-reduced-motion:reduce){#rd.rise,.cd.in,.sc.pop{animation:none}}
+
+/* full page reader: opens from the bottom and covers the whole screen */
+#rd{position:fixed;inset:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);padding:0 18px calc(40px + env(safe-area-inset-bottom,0px))}
+[data-theme=dark] #rd{background:radial-gradient(620px 320px at 50% -60px,rgba(255,138,43,.22),transparent 70%),radial-gradient(520px 320px at 0% 45%,rgba(53,242,160,.12),transparent 70%),var(--bg)}
+#rd>*{max-width:760px;margin-left:auto;margin-right:auto}
+.rtop{position:sticky;top:0;z-index:6;padding:calc(10px + env(safe-area-inset-top,0px)) 0 8px;background:linear-gradient(var(--bg) 72%,transparent)}
+#rd.rise{animation:slideup .6s cubic-bezier(.2,.8,.2,1) both}
+#rd.out{animation:slidedown .32s ease both}
+@keyframes slideup{from{transform:translateY(100%);opacity:.4}to{transform:none;opacity:1}}
+@keyframes slidedown{to{transform:translateY(100%);opacity:.2}}
+@media (prefers-reduced-motion:reduce){#rd.rise,#rd.out{animation:none}}
+
+/* red back button */
+#cl{background:linear-gradient(180deg,#ff6b6b 0%,#e11d2e 55%,#b4101f 100%);border:1px solid #ff8f8f;color:#fff;font-weight:600;padding:10px 20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 20px rgba(225,29,46,.45);text-shadow:0 1px 2px rgba(0,0,0,.35);transition:box-shadow .3s,transform .3s}
+#cl:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 30px rgba(255,60,60,.7);transform:translateY(-2px)}
+#cl:active{transform:scale(.96)}
 </style>
 </head>
 <body>
@@ -179,7 +208,7 @@ dialog .c{display:block;margin:12px auto 0}
 <h2>সূরা বেছে নিন</h2>
 <p class="hint">কার্ড ডানে-বামে স্লাইড করুন, তারপর ট্যাপ করুন</p>
 <div class="car" id="car" role="list"></div>
-<section id="rd" hidden>
+<section id="rd" hidden role="dialog" aria-label="সূরা পড়ার পাতা"><div class="rtop"><button class="c" id="cl" type="button">← সূরা তালিকা</button></div>
 <div class="rh"><div><small>এখন পড়ছেন</small><h2 id="tt"></h2></div><span class="ar" id="tar" lang="ar"></span></div>
 <div class="tools">
 <button class="c" data-m="focus" aria-pressed="true">এক আয়াত</button>
@@ -199,7 +228,6 @@ dialog .c{display:block;margin:12px auto 0}
 <div class="fb" id="fb"><button class="c" id="pv">← আগের</button><span id="cnt"></span><button class="c" id="nx">পরের →</button></div>
 </section>
 <dialog id="pw"><h3>সম্পূর্ণ আমপারা আনলক</h3><p>২৮টি সূরা · ২৮৮টি আয়াত · চার স্তর</p><p>আনলক করতে WhatsApp-এ মেসেজ করুন।</p><a class="cta" href="https://wa.me/61432772444?text=%E0%A6%86%E0%A6%B8%E0%A6%B8%E0%A6%BE%E0%A6%B2%E0%A6%BE%E0%A6%AE%E0%A7%81%20%E0%A6%86%E0%A6%B2%E0%A6%BE%E0%A6%87%E0%A6%95%E0%A7%81%E0%A6%AE%2C%20%E0%A6%86%E0%A6%AE%E0%A6%BF%20%E0%A6%AA%E0%A7%81%E0%A6%B0%E0%A7%8B%20%E0%A6%86%E0%A6%AE%E0%A6%AA%E0%A6%BE%E0%A6%B0%E0%A6%BE%20%28%E0%A7%A8%E0%A7%AE%20%E0%A6%B8%E0%A7%82%E0%A6%B0%E0%A6%BE%29%20%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%BF%E0%A6%AE%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%AE%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4" target="_blank" rel="noopener">WhatsApp-এ মেসেজ করুন</a><button class="c" id="pc">বন্ধ করুন</button></dialog>
-<p class="note"><b>SAMPLE</b> · ২৮টি সূরার তালিকা দেওয়া আছে; সব ২৮টি সূরা খোলা ও প্রতিটিতে অডিও আছে। ১৬টি সূরায় (১০১ আয়াত) চার স্তর বিল্ট-ইন; বাকি ১২টিতে আরবি, ট্রানসলিটারেশন ও বাংলা অর্থ ইন্টারনেট থেকে (alquran.cloud, বাংলা: মুহিউদ্দীন খান) লোড হয়, সেগুলোতে বাংলা উচ্চারণ নেই। প্রকাশের আগে আরবি পাঠ, উচ্চারণ ও অনুবাদ অবশ্যই যোগ্য আলেম/শিক্ষকের যাচাই ও নির্দিষ্ট সূত্র সহ অনুমোদিত হতে হবে। প্রথম ১৬টি সূরার বাংলা অর্থ সরল ভাবানুবাদ, কোনো নির্দিষ্ট প্রকাশিত অনুবাদ নয়। অডিও: মিশারি রাশিদ আল-আফাসি, সূত্র <a href="https://everyayah.com/" target="_blank" rel="noopener" style="color:var(--tl)">everyayah.com</a>।</p>
 </main>
 <script>
 var A=[
@@ -294,24 +322,29 @@ function loadR(i,last){
  });
 }
 function openS(i,last){
- cur=i;ai=(last&&D[i].a)?D[i].a.length-1:0;seen[i]=1;
+ if(i!==cur){seq=0;au.pause();ak="";ab=null;pc=null}cur=i;ai=(last&&D[i].a)?D[i].a.length-1:0;seen[i]=1;
  cards.forEach(function(b,j){b.classList.toggle("on",j===i)});
  cards[i].scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
- $("rd").hidden=false;if(D[i].a)render();else loadR(i,last);
+ if(inited){var cb=cards[i];animNow=1;cb.classList.remove("pop");void cb.offsetWidth;cb.classList.add("pop");if($("rd").hidden)openRd();else $("rd").scrollTop=0}
+ if(D[i].a)render();else loadR(i,last);
 }
 function layers(a){
  return [["pr","p","উচ্চারণ",a[1]],["tr","t2","Transliteration",a[2]],["mn","m","অর্থ",a[3]]].filter(function(l){return l[3]}).map(function(l){
   return '<div class="ly '+l[1]+(on[l[0]]?"":" hide")+(prac?" mask":"")+'" tabindex="'+(prac?0:-1)+'"><b>'+l[2]+'</b>'+l[3]+'</div>';
  }).join("");
 }
-var AUD={},au=new Audio(),ak="",ab=null,seq=0;au.preload="none";
+var AUD={},au=new Audio(),ak="",ab=null,seq=0,pc=null,animNow=0,curAn=0,inited=false;au.preload="none";
 M.forEach(function(m){D.forEach(function(d){if(d.n===m[1]&&(!d.a||d.a.length===m[3]))AUD[d.n]=m[0]})});
 var SRC=["https://everyayah.com/data/Alafasy_128kbps/","https://verses.quran.com/Alafasy/mp3/","https://druvx13-quran-audio-alafasy.hf.space/"],si=0,an=0,aj=0;
 function aurl(n,i){return SRC[si]+("00"+n).slice(-3)+("00"+(i+1)).slice(-3)+".mp3"}
 function aset(n,i){si=0;an=n;aj=i;au.src=aurl(n,i)}
-function pal(){var b=$("pa");if(b)b.textContent=(seq&&!au.paused)?"⏸ থামান":"▶ পুরো সূরা শুনুন"}
-au.onpause=function(){if(ab&&au.paused)ab.textContent="▶";pal()};
-au.onended=function(){
+function pal(){var b=$("pa");if(b)b.textContent=(seq&&!au.paused)?"⏸ Pause":"▶ Play · পুরো সূরা শুনুন"}
+function wd(t){return t.split(" ").map(function(x){return '<span class="w">'+x+'</span>'}).join(" ")}
+function fillUp(){if(!pc)return;var ws=pc.querySelectorAll(".ar .w");if(!ws.length)return;var p=au.duration>0?au.currentTime/au.duration:0;if(au.ended)p=1;var tot=0,L=[];ws.forEach(function(w){var l=w.textContent.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,"").length||1;tot+=l;L.push(tot)});var f=p*tot;ws.forEach(function(w,j){var st=j?L[j-1]:0;w.classList.toggle("on",f>=st+(L[j]-st)*.25)})}
+function tick(){fillUp();if(!au.paused&&!au.ended)requestAnimationFrame(tick)}
+au.onplay=function(){if(pc)pc.classList.add("playing");tick()};
+au.onpause=function(){if(ab&&au.paused)ab.textContent="▶ Play";if(pc)pc.classList.remove("playing");pal()};
+au.onended=function(){fillUp();
  if(seq&&cur>=0&&ak===D[cur].n+":"+ai&&ai<D[cur].a.length-1){ai++;ak=D[cur].n+":"+ai;aset(AUD[D[cur].n],ai);au.play();render();pal()}
  else{seq=0;pal()}
 };
@@ -321,18 +354,18 @@ au.onerror=function(){
  seq=0;pal();if(ab)ab.textContent="!";var m=$("am");if(m)m.hidden=false;
 };
 function card(a,i){
- var k=D[cur].n+":"+i,c=mk("article","cd",'<div class="tp"><span class="no">'+(i+1)+'</span><span class="bt">'+(AUD[D[cur].n]?'<button class="pl" aria-label="Play ayah '+(i+1)+'">▶</button>':'')+'<button class="bm" aria-label="Bookmark ayah '+(i+1)+'">'+(bm[k]?"★":"☆")+'</button></span></div><div class="ar" lang="ar">'+a[0]+'</div>'+layers(a));
+ var k=D[cur].n+":"+i,c=mk("article","cd",'<div class="tp"><span class="no">'+(i+1)+'</span><span class="bt">'+(AUD[D[cur].n]?'<button class="pl" aria-label="Play ayah '+(i+1)+'">▶ Play</button>':'')+'<button class="bm" aria-label="Bookmark ayah '+(i+1)+'">'+(bm[k]?"★":"☆")+'</button></span></div><div class="ar" lang="ar">'+wd(a[0])+'</div>'+layers(a));
  c.querySelector(".bm").onclick=function(){bm[k]=!bm[k];try{localStorage.setItem("bm2",JSON.stringify(bm))}catch(e){}render()};
- var pl=c.querySelector(".pl");
+ var pl=c.querySelector(".pl");if(curAn){c.classList.add("in");c.style.setProperty("--d",Math.min(i,8)*70+"ms")}if(ak===k){pc=c;if(!au.paused)c.classList.add("playing");fillUp()}
  if(pl){
-  if(ak===k){ab=pl;if(!au.paused)pl.textContent="⏸"}
+  if(ak===k){ab=pl;if(!au.paused)pl.textContent="⏸ Pause"}
   pl.onclick=function(){
    var b=this;
    seq=0;
    if(ak===k&&!au.paused){au.pause();return}
-   if(ak!==k){aset(AUD[D[cur].n],i);ak=k}else{au.currentTime=0}
-   ab=b;b.textContent="⏸";b.title="";
-   var pr=au.play();if(pr&&pr.catch)pr.catch(function(){b.textContent="!"});
+   if(ab&&ab!==b)ab.textContent="▶ Play";if(pc&&pc!==c)pc.classList.remove("playing");if(ak!==k){aset(AUD[D[cur].n],i);ak=k}else{au.currentTime=0}
+   ab=b;pc=c;c.classList.add("playing");b.textContent="⏸ Pause";b.title="";
+   var pr=au.play();if(pr&&pr.catch)pr.catch(function(){b.textContent="! Retry"});
   };
  }
  c.querySelectorAll(".mask").forEach(function(m){
@@ -342,7 +375,7 @@ function card(a,i){
  return c;
 }
 function render(){
- var d=D[cur],A=d.a,h=$("lst"),n=0,k;
+ var d=D[cur],A=d.a,h=$("lst"),n=0,k;curAn=animNow;animNow=0;
  h.innerHTML="";$("dots").innerHTML="";
  $("tt").textContent=d.bn+(AUD[d.n]?" 🎧":"");$("tar").textContent=d.ar;
  if(mode==="focus"){
@@ -357,8 +390,12 @@ function render(){
  $("sb").textContent=n;$("ss").textContent=Object.keys(seen).length;
 }
 function nf(s){var mi=-1,di=-1;M.forEach(function(m,k){if(m[1]===D[cur].n)mi=k});var j=mi+s;if(j<0||j>=M.length)return -1;D.forEach(function(d,q){if(d.n===M[j][1])di=q});return di}
-function nxt(){if(ai<D[cur].a.length-1){ai++;render()}else{var j=nf(1);if(j>=0)openS(j)}}
-function prv(){if(ai>0){ai--;render()}else{var j=nf(-1);if(j>=0)openS(j,1)}}
+function openRd(){var r=$("rd");r.hidden=false;r.classList.remove("out","rise");void r.offsetWidth;r.classList.add("rise");r.scrollTop=0;document.body.style.overflow="hidden";if(!history.state||!history.state.rd)history.pushState({rd:1},"")}
+function closeRd(){var r=$("rd");if(r.hidden)return;au.pause();seq=0;r.classList.remove("rise");r.classList.add("out");setTimeout(function(){r.hidden=true;r.classList.remove("out");document.body.style.overflow=""},320)}
+$("cl").onclick=function(){if(history.state&&history.state.rd)history.back();else closeRd()};
+addEventListener("popstate",closeRd);
+function nxt(){if(ai<D[cur].a.length-1){ai++;animNow=1;render()}else{var j=nf(1);if(j>=0)openS(j)}}
+function prv(){if(ai>0){ai--;animNow=1;render()}else{var j=nf(-1);if(j>=0)openS(j,1)}}
 $("pa").onclick=function(){
  if(seq&&!au.paused){seq=0;au.pause();pal();return}
  var n=D[cur].n;seq=1;mode="focus";
@@ -373,7 +410,7 @@ $("up").onclick=function(){fs=Math.min(48,fs+4);render()};
 $("dn").onclick=function(){fs=Math.max(24,fs-4);render()};
 $("th").onclick=function(){var r=document.documentElement;r.setAttribute("data-theme",r.getAttribute("data-theme")==="dark"?"light":"dark")};
 $("buy").onclick=function(){$("pw").showModal()};$("pc").onclick=function(){$("pw").close()};
-openS(0);
+openS(0);inited=true;
 </script>
 </body>
 </html>
